@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <style>
+      body { margin: 0; overflow: hidden; font-family: sans-serif; }
+
+      #scanning-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        background: rgba(0, 0, 0, 0.2);
+        pointer-events: none;
+      }
+
+      .scan-message {
+        background: rgba(0, 0, 0, 0.7);
+        color: #D4AF37;
+        padding: 20px 40px;
+        border-radius: 50px;
+        border: 2px solid #D4AF37;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% { opacity: 0.6; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.05); }
+        100% { opacity: 0.6; transform: scale(1); }
+      }
+
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+
+    <div id="scanning-overlay">
+      <div class="scan-message">Escanea el cuadro</div>
+    </div>
+
+    <a-scene 
+      mindar-image="imageTargetSrc: ./targets.mind;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true, physicallyCorrectLights" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <video 
+          id="michaelVideo" 
+          src="./michaeltrailer.mp4" 
+          preload="auto" 
+          loop="true" 
+          crossorigin="anonymous" 
+          webkit-playsinline 
+          playsinline>
+        </video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <a-entity id="target0" mindar-image-target="targetIndex: 0">
+        <a-video 
+          src="#michaelVideo" 
+          width="1" 
+          height="1.5" 
+          position="0 0 0" 
+          rotation="0 0 0">
+        </a-video>
+      </a-entity>
+      
+    </a-scene>
+
+    <script>
+      const overlay = document.getElementById('scanning-overlay');
+      const targetEntity = document.getElementById('target0');
+      const video = document.querySelector('#michaelVideo');
+
+      // Cuando se detecta la tarjeta: ocultar mensaje y dar PLAY
+      targetEntity.addEventListener("targetFound", () => {
+        overlay.classList.add("hidden");
+        video.play();
+      });
+
+      // Cuando se pierde la tarjeta: mostrar mensaje y dar PAUSE
+      targetEntity.addEventListener("targetLost", () => {
+        overlay.classList.remove("hidden");
+        video.pause();
+      });
+
+      // Interacción inicial para desbloquear audio/video en móviles
+      window.addEventListener('click', () => {
+          video.load(); 
+      }, { once: true });
+    </script>
+  </body>
+</html>
+
